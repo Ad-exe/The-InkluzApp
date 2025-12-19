@@ -1,0 +1,522 @@
+/* base page wrapper */
+:root{
+  --bg: #0b0f14;          /* main background */
+  --card: #121a24;        /* cards / panels */
+  --text: #e9eef6;        /* primary text */
+  --muted: #7f8ea3;       /* secondary text */
+  --brand: #7ef6d4;       /* accent (teal) */
+  --border: #1f2a38;      /* borders */
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  --radius: 16px;
+}
+
+.page{
+  width: 100vw;
+  min-height: calc(100vh - 70px);
+  padding: 26px 24px 60px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.toolHeader{ margin-bottom: 14px; }
+.toolTitle{ margin: 0 0 6px; font-size: 34px; letter-spacing: .2px; }
+.toolSub{ margin: 0; color: var(--muted); }
+
+.card{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- SignToText ONLY (scoped) ---------- */
+.sttGrid{
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px){
+  .sttGrid{ grid-template-columns: 1fr; }
+}
+
+.sttVideo{
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+}
+
+.sttVideo video{ width: 100%; height: auto; display: block; }
+.sttVideo canvas{ position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.panel{ padding: 16px; }
+.panelTitle{ margin: 0; font-size: 18px; }
+.currentValue{ font-size: 56px; font-weight: 900; margin-top: 8px; }
+.wordValue{ font-size: 24px; font-weight: 700; min-height: 34px; margin-top: 8px; }
+.tip{ margin-top: 14px; color: var(--muted); }
+
+/* ---------- TextToSpeech ONLY (scoped) ---------- */
+.ttsGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px){
+  .ttsGrid{ grid-template-columns: 1fr; }
+}
+
+.ttsLeft, .ttsRight{ padding: 16px; }
+
+.label{ display:block; margin-bottom: 8px; font-weight: 700; }
+.ttsTextarea{
+  width: 100%;
+  min-height: 160px;
+  resize: vertical;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #0e141a;
+  color: var(--text);
+  outline: none;
+}
+
+.btnRow{ display:flex; flex-wrap:wrap; gap: 10px; margin-top: 12px; }
+
+.btn{
+  border: 1px solid var(--border);
+  background: #0f1620;
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.btn:hover{ opacity: .92; }
+
+.row{ margin-bottom: 12px; }
+.select{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #0e141a;
+  color: var(--text);
+}
+
+.sliderRow{
+  display: grid;
+  grid-template-columns: 70px 1fr 55px;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.mutedLine{ margin-top: 10px; color: var(--muted); }
+
+.quick{ margin-top: 16px; }
+.chipRow{ display:flex; flex-wrap:wrap; gap: 10px; }
+
+.chip{
+  border: 1px solid var(--border);
+  background: #0f1620;
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+html, body, #root{
+  width: 100%;
+  height: 100%;
+}
+
+body{
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+/* ===== NAVBAR ===== */
+.navbar{
+  background: linear-gradient(180deg, #0f1723, #0b0f14);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-link{
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.nav-link.active{
+  background: var(--brand);
+  color: #000;
+  border-radius: 12px;
+  opacity: 1;
+}
+
+.sosWrap{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.sosBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:700;
+  border:1px solid rgba(255,255,255,.12);
+  background:#ff3b30;
+  color:#0b0f14;
+  text-decoration:none;
+  cursor:pointer;
+}
+
+.sosBtn.ghost{
+  background:transparent;
+  color:#e9eef6;
+}
+/* ===== Floating SOS ===== */
+.sos-fab{
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  width: 66px;
+  height: 66px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: #ff3b30;
+  color: #0b1119;
+  font-weight: 1000;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 18px 45px rgba(0,0,0,0.45);
+}
+.sos-fab:hover{ filter: brightness(1.05); }
+.sos-fab:active{ transform: translateY(1px); }
+
+.sos-backdrop{
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(2px);
+}
+
+.sos-panel{
+  position: fixed;
+  right: 20px;
+  bottom: 96px;
+  z-index: 9999;
+  width: min(420px, calc(100vw - 40px));
+  background: #0b1119;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  box-shadow: 0 22px 60px rgba(0,0,0,0.6);
+  overflow: hidden;
+
+  transform: translateY(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: 160ms ease;
+}
+.sos-panel.open{
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sos-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.sos-title{ font-size: 18px; font-weight: 950; }
+.sos-subtitle{ font-size: 12px; opacity: 0.7; margin-top: 2px; }
+
+.sos-icon-btn{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
+  cursor: pointer;
+}
+
+.sos-list{ padding: 12px; display: grid; gap: 10px; }
+
+.sos-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+}
+.sos-item-label{ font-weight: 900; }
+.sos-item-note{ font-size: 12px; opacity: 0.7; margin-top: 2px; }
+
+.sos-item-actions{ display:flex; gap: 8px; }
+.sos-call, .sos-copy{
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sos-call{
+  background: #49e6d4; /* matches your brand vibe */
+  color: #07201b;
+  border: 1px solid transparent;
+}
+
+.sos-foot{
+  padding: 10px 14px 14px;
+  font-size: 12px;
+  opacity: 0.7;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+/* ---------- SOS Floating UI ---------- */
+.sos-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 9999;
+
+  border: 0;
+  cursor: pointer;
+  padding: 12px 16px;
+  border-radius: 999px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+
+  background: #ff3b30;
+  color: #111;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.sos-fab:hover {
+  transform: translateY(-1px);
+}
+
+.sos-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: end;
+  padding: 18px;
+}
+
+.sos-card {
+  width: min(420px, 100%);
+  background: #0b1119;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+}
+
+.sos-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sos-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #e9eef6;
+}
+
+.sos-sub {
+  font-size: 12px;
+  color: rgba(233, 238, 246, 0.7);
+  margin-top: 2px;
+}
+
+.sos-close {
+  border: 0;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e9eef6;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.sos-list {
+  padding: 10px 14px 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.sos-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.sos-left {
+  min-width: 0;
+}
+
+.sos-num {
+  font-size: 18px;
+  font-weight: 950;
+  color: #e9eef6;
+  line-height: 1.1;
+}
+
+.sos-desc {
+  font-size: 12px;
+  color: rgba(233, 238, 246, 0.75);
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+.sos-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sos-btn {
+  border: 0;
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 900;
+  background: #7fe6d4;
+  color: #07201b;
+}
+
+.sos-btn.ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e9eef6;
+}
+
+.sos-foot {
+  padding: 10px 14px 14px;
+  font-size: 12px;
+  color: rgba(233, 238, 246, 0.7);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 480px) {
+  .sos-backdrop {
+    place-items: end center;
+  }
+  .sos-actions {
+    flex-direction: column;
+  }
+}
+/* Page title */
+.page-title {
+  font-size: 36px;
+  font-weight: 900;
+  margin: 30px 0 20px;
+}
+
+/* Grid container */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 per row */
+  gap: 20px;
+  padding-bottom: 40px;
+}
+
+/* Video card */
+.video-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+/* Video itself */
+.video-card video {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+/* ===== Responsive Breakpoints ===== */
+
+/* Large tablets / small laptops */
+@media (max-width: 1200px) {
+  .video-grid {
+    grid-template-columns: repeat(3, 1fr); /* 3 per row */
+  }
+}
+
+/* Tablets */
+@media (max-width: 900px) {
+  .video-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 per row */
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .video-grid {
+    grid-template-columns: 1fr; /* 1 per row */
+  }
+}
+/* SOS – mobile only */
+.sos-only-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sos-only-mobile {
+    display: block;
+  }
+}
+/* Mirror only the video preview */
+.sttVideo video,
+.videoWrap video {
+  transform: scaleX(-1);
+}
+
+/* Keep canvas NOT mirrored (so drawing matches the hand correctly) */
+.sttVideo canvas,
+.videoWrap canvas {
+  transform: none;
+}
+/* SOS should NEVER show on desktop */
+@media (min-width: 769px) {
+  .sos-fab,
+  .sos-panel {
+    display: none !important;
+  }
+}
