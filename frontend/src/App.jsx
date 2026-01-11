@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
 
 import Navbar from "./components/Navbar";
 import SOSButton from "./components/SOSButton";
@@ -11,28 +10,6 @@ import TextToSpeech from "./pages/TextToSpeech";
 import Contact from "./pages/Contact";
 
 export default function App() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  // more reliable than innerWidth-only
-  const mq = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    return window.matchMedia("(max-width: 768px)");
-  }, []);
-
-  useEffect(() => {
-    const update = () => setIsMobile(mq ? mq.matches : window.innerWidth <= 768);
-
-    update();
-
-    if (mq) {
-      mq.addEventListener?.("change", update);
-      return () => mq.removeEventListener?.("change", update);
-    } else {
-      window.addEventListener("resize", update);
-      return () => window.removeEventListener("resize", update);
-    }
-  }, [mq]);
-
   return (
     <BrowserRouter>
       <Navbar />
@@ -45,8 +22,8 @@ export default function App() {
         <Route path="/contact" element={<Contact />} />
       </Routes>
 
-      {/* SOS: render only on mobile */}
-      {isMobile && <SOSButton />}
+      {/* Render always, hide on desktop using CSS */}
+      <SOSButton />
     </BrowserRouter>
   );
 }

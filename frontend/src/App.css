@@ -520,3 +520,17 @@ body{
     display: none !important;
   }
 }
+/* SOS: hide on desktop, show on mobile */
+.sos-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 9999;
+}
+
+/* Hide SOS for desktop screens */
+@media (min-width: 769px) {
+  .sos-fab {
+    display: none !important;
+  }
+}

@@ -1,157 +1,91 @@
+import base64
+import io
 import os
-import re
-from typing import List, Optional, Tuple
 
 import numpy as np
-import joblib
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import cv2
+from PIL import Image
+from fastapi import FastAPI, UploadFile, File, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
+from ultralytics import YOLO
 
 app = FastAPI()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # change later to your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-CSV_PATH = os.path.join(BASE_DIR, "data", "alphabet.csv")
-MODEL_PATH = os.path.join(BASE_DIR, "models", "gesture_clf.pkl")
+# ---- Model loading (auto fallback) ----
+# 1) If backend/weights/best.pt exists => use it
+# 2) Else => use yolov8n.pt (auto-downloads)
+CUSTOM_WEIGHTS = "weights/best.pt"
 
-gesture_clf = joblib.load(MODEL_PATH)
+if os.path.exists(CUSTOM_WEIGHTS):
+    MODEL_PATH = CUSTOM_WEIGHTS
+else:
+    MODEL_PATH = "yolov8n.pt"
 
-
-def read_feature_pairs_from_csv_header(csv_path: str) -> List[Tuple[int, int]]:
-    """
-    Reads first line of CSV and extracts features like: dist_20_0, dist_16_12, ...
-    Returns the list of (a,b) pairs in the SAME order as CSV columns.
-    """
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"alphabet.csv not found at: {csv_path}")
-
-    with open(csv_path, "r", encoding="utf-8") as f:
-        header = f.readline().strip()
-
-    cols = [c.strip() for c in header.split(",") if c.strip()]
-    pairs: List[Tuple[int, int]] = []
-
-    for c in cols:
-        m = re.fullmatch(r"dist_(\d+)_(\d+)", c)
-        if m:
-            a = int(m.group(1))
-            b = int(m.group(2))
-            pairs.append((a, b))
-
-    if not pairs:
-        raise ValueError(
-            "No dist_*_* feature columns found in alphabet.csv header. "
-            "Expected columns like dist_20_0, dist_16_12, ..."
-        )
-
-    return pairs
-
-
-DIST_PAIRS = read_feature_pairs_from_csv_header(CSV_PATH)
-
-
-def compute_features(joints_21x3: np.ndarray) -> np.ndarray:
-    # 🔹 NORMALIZATION STEP (VERY IMPORTANT)
-    # Use wrist (0) → middle finger MCP (9) as scale reference
-    scale = float(np.linalg.norm(joints_21x3[0] - joints_21x3[9])) + 1e-6
-
-    feats = []
-    for a, b in DIST_PAIRS:
-        d = float(np.linalg.norm(joints_21x3[a] - joints_21x3[b])) / scale
-        feats.append(d)
-
-    return np.array(feats, dtype=np.float32).reshape(1, -1)
-
+model = YOLO(MODEL_PATH)
 
 
 @app.get("/health")
 def health():
-    return {
-        "status": "ok",
-        "feature_count": len(DIST_PAIRS),
-        "csv_path": CSV_PATH,
-    }
+    return {"status": "ok", "model": MODEL_PATH}
+
+
+def predict_from_bgr(img_bgr: np.ndarray):
+    results = model.predict(img_bgr, conf=0.25, verbose=False)
+    r = results[0]
+
+    out = []
+    if r.boxes is None:
+        return out
+
+    boxes = r.boxes.xyxy.cpu().numpy()
+    confs = r.boxes.conf.cpu().numpy()
+    clss = r.boxes.cls.cpu().numpy().astype(int)
+
+    for (x1, y1, x2, y2), c, k in zip(boxes, confs, clss):
+        out.append(
+            {
+                "class_id": int(k),
+                "confidence": float(c),
+                "box": [float(x1), float(y1), float(x2), float(y2)],
+            }
+        )
+    return out
+
+
+@app.post("/predict")
+async def predict(file: UploadFile = File(...)):
+    data = await file.read()
+    img = Image.open(io.BytesIO(data)).convert("RGB")
+    img_np = np.array(img)
+    img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+
+    preds = predict_from_bgr(img_bgr)
+    return {"predictions": preds}
 
 
 @app.websocket("/ws")
-async def ws_endpoint(ws: WebSocket):
-    await ws.accept()
-
-    word: List[str] = []
-    last_letter: str = ""
-    static_gesture: int = 0
-
+async def ws_predict(websocket: WebSocket):
+    await websocket.accept()
     try:
         while True:
-            msg = await ws.receive_json()
-            landmarks = msg.get("landmarks")
+            msg = await websocket.receive_json()
+            # expected: { "image": "data:image/jpeg;base64,...." }
+            b64 = msg["image"].split(",")[-1]
+            raw = base64.b64decode(b64)
 
-            if not landmarks or len(landmarks) != 21:
-                await ws.send_json({
-                    "has_hand": False,
-                    "current": None,
-                    "word": "".join(word),
-                    "added": False,
-                    "added_value": None
-                })
-                continue
+            img = Image.open(io.BytesIO(raw)).convert("RGB")
+            img_np = np.array(img)
+            img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
 
-            try:
-                joints = np.array(landmarks, dtype=np.float32).reshape(21, 3)
-                handed = msg.get("handedness", "Unknown")
-                 # Mirror x for left hand to match right-hand training
-                if handed == "Left":
-                  joints[:, 0] = 1.0 - joints[:, 0]
-
-                X = compute_features(joints)
-
-                pred = gesture_clf.predict(X)[0]
-
-# map numeric classes -> letters
-                if isinstance(pred, (int, np.integer)) or str(pred).isdigit():
-                  idx = int(pred)
-                  if 0 <= idx <= 25:
-                    pred_letter = chr(ord("A") + idx)
-                  else:
-                   pred_letter = str(pred)
-                else:
-                 pred_letter = str(pred)
-                 print("RAW PRED:", pred, "->", pred_letter)
-
-
-
-            except Exception as e:
-                await ws.send_json({
-                    "error": f"Predict error: {e}",
-                    "has_hand": True,
-                    "current": None,
-                    "word": "".join(word),
-                    "added": False,
-                    "added_value": None
-                })
-                continue
-
-            added = False
-            added_value: Optional[str] = None
-
-            if last_letter == pred_letter:
-                static_gesture += 1
-            else:
-                last_letter = pred_letter
-                static_gesture = 0
-
-            if static_gesture > 6:
-                word.append(pred_letter)
-                added = True
-                added_value = pred_letter
-                static_gesture = 0
-
-            await ws.send_json({
-                "has_hand": True,
-                "current": pred_letter,
-                "word": "".join(word),
-                "added": added,
-                "added_value": added_value
-            })
-
-    except WebSocketDisconnect:
-        pass
+            preds = predict_from_bgr(img_bgr)
+            await websocket.send_json({"predictions": preds})
+    except Exception:
+        await websocket.close()
