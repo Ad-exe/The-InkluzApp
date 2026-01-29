@@ -7,9 +7,13 @@ export default function Contact() {
 
       <div className="contact-card">
         <p>
+          <strong>Project:</strong> INKLUZ APP
+        </p>
+
+        <p>
           <strong>Email:</strong>{" "}
-          <a href="mailto:adityachowdarybotla@gmail.com">
-            adityachowdarybotla@gmail.com
+          <a href="mailto:inkluzapp@gmail.com">
+            inkluzapp@gmail.com
           </a>
         </p>
 
@@ -22,10 +26,6 @@ export default function Contact() {
           >
             github.com/Ad-exe/The-InkluzApp
           </a>
-        </p>
-
-        <p>
-          <strong>University:</strong> SRM Institute of Science and Technology
         </p>
       </div>
     </div>
