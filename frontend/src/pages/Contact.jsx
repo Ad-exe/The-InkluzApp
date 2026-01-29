@@ -7,19 +7,6 @@ export default function Contact() {
 
       <div className="contact-card">
         <p>
-          <strong>Project Name:</strong> INKLUZ APP
-        </p>
-
-        <p>
-          <strong>Description:</strong> An inclusive AI-based application that
-          converts hand gestures into text and speech for better communication.
-        </p>
-
-        <p>
-          <strong>Developer:</strong> Adithya Chowdary
-        </p>
-
-        <p>
           <strong>Email:</strong>{" "}
           <a href="mailto:adityachowdarybotla@gmail.com">
             adityachowdarybotla@gmail.com
