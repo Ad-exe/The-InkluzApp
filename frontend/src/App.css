@@ -534,3 +534,36 @@ body{
     display: none !important;
   }
 }
+.page-container {
+  padding: 40px;
+  color: #ffffff;
+}
+
+.page-title {
+  font-size: 32px;
+  margin-bottom: 25px;
+}
+
+.contact-card {
+  max-width: 600px;
+  background: #111827;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 255, 200, 0.15);
+}
+
+.contact-card p {
+  font-size: 16px;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.contact-card a {
+  color: #3bffcc;
+  text-decoration: none;
+}
+
+.contact-card a:hover {
+  text-decoration: underline;
+}
+
